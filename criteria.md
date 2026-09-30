@@ -29,6 +29,25 @@ transit, board games, and student advice. I expect retrieval to work for most
 of them, but set 4 of 5 rather than all 5 because wording differences or a
 closely related document could cause one question to retrieve useful context
 without the exact answer.
+
+> **Revised in unit 2:** I couldn't judge "the answer contains the fact in
+> `expects`" the same way twice. My first `scorer.py` checked whether
+> `expects` appeared verbatim as a substring of the answer, and that scored
+> a correct answer ("laundry is card only... app-based") as wrong just
+> because the model phrased it differently than I did. Switching to an
+> LLM-as-judge fixed that, but the judge itself then scored one identical
+> `(question, answer)` pair as `fail` on one run and `pass` on the next two —
+> the fact was a count ("three") and the answer stated it as parts ("two
+> midterms and a final") without a stated total, and the judge's default
+> sampling temperature meant it didn't reliably do that addition itself.
+>
+> **Why revised:** Neither failure was retrieval or generation being wrong —
+> both were the scorer being unable to recognize a right answer consistently.
+> The criterion itself (4 of 5 answers state the fact) is unchanged; what's
+> revised is how "states the fact" gets checked: an LLM judge, called at
+> `temperature=0.0`, explicitly instructed to add up listed items when the
+> fact is a count, and required to reason for a sentence before answering
+> instead of committing to a verdict in one word.
 ---
 
 ## 2. Every answer names a source

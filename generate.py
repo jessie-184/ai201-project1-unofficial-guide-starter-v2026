@@ -199,7 +199,12 @@ def _get_client():
     return _client
 
 
-def generate(prompt: str, system: str | None = None, cache: bool = True) -> str:
+def generate(
+    prompt: str,
+    system: str | None = None,
+    cache: bool = True,
+    temperature: float | None = None,
+) -> str:
     """
     Send a prompt and get text back.
 
@@ -209,6 +214,9 @@ def generate(prompt: str, system: str | None = None, cache: bool = True) -> str:
         cache:  reuse an identical earlier answer if there is one. Leave this
                 True while building. Pass False when you're evaluating — three
                 runs of the same question have to be three real answers.
+        temperature: left alone (the service's default) unless you pass a
+                number. Grading-style calls that want the same input to land
+                on the same verdict every time should pass 0.0.
 
     Every call in this course goes through here. If you need to change how the
     model is called, change it in this one place.
@@ -235,8 +243,13 @@ def generate(prompt: str, system: str | None = None, cache: bool = True) -> str:
             _session_calls += 1
 
             kwargs = {"model": config.MODEL, "contents": prompt}
+            gen_config = {}
             if system:
-                kwargs["config"] = {"system_instruction": system}
+                gen_config["system_instruction"] = system
+            if temperature is not None:
+                gen_config["temperature"] = temperature
+            if gen_config:
+                kwargs["config"] = gen_config
 
             response = client.models.generate_content(**kwargs)
             _record_tokens(response)
